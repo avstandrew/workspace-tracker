@@ -1,0 +1,11 @@
+.dist
+node_modules
+coverage
+.env
+
+*.js
+*.d.ts
+
+!commitlint.config.js
+!.eslintrc.js
+!jest.config.js
