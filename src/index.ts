@@ -50,38 +50,7 @@ const app = new App({
     directInstall: true,
   },
   //@ts-ignore
-  installationStore:
-    process.env.ENVIRONMENT !== "prod"
-      ? new FileInstallationStore()
-      : {
-          storeInstallation: async (installation) => {
-            // Bolt will pass your handler an installation object
-            if (installation.isEnterpriseInstall) {
-              // support for org wide app installation
-              if (installation.enterprise?.id)
-                database[installation.enterprise.id] = installation;
-            } else {
-              // single team app installation
-              if (installation?.team?.id)
-                database[installation.team.id] = installation;
-            }
-          },
-          fetchInstallation: async (installQuery) => {
-            // change the line below so it fetches from your database
-            if (
-              installQuery.isEnterpriseInstall &&
-              installQuery.enterpriseId !== undefined
-            ) {
-              // org wide app installation lookup
-              return database[installQuery.enterpriseId];
-            }
-            if (installQuery.teamId !== undefined) {
-              // single team app installation lookup
-              return database[installQuery.teamId];
-            }
-            throw new Error("Failed fetching installation");
-          },
-        },
+  installationStore: new FileInstallationStore(),
 });
 
 // All the room in the world for your code
