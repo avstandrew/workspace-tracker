@@ -142,9 +142,10 @@ app.event("app_home_opened", async ({ context, event, say }) => {
   }
 });
 
-(async () => {
-  // Start your app
-  await app.start(process.env.PORT || 3000);
+  const PORT = process.env.PORT || 3000;
 
-  console.log("⚡️ Bolt app is running!");
+
+(async () => {
+  await app.start(PORT);
+  console.log(`⚡️ Bolt app is running on port ${PORT}!`);
 })();
