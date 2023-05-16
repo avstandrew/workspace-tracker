@@ -1,22 +1,70 @@
 import { App } from "@slack/bolt";
+import { FileInstallationStore } from "@slack/oauth";
 import dotenv from "dotenv";
 import { welcome } from "./blocks/welcome";
 
 dotenv.config();
 
+const database = new Map();
+
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
-  socketMode: true, // add this
-  appToken: process.env.SLACK_APP_TOKEN, // add this,
+  appToken: process.env.SLACK_APP_TOKEN,
+  stateSecret: process.env.SLACK_STATE_SECRET,
+  socketMode: true,
+  installerOptions: {
+    directInstall: true,
+  },
+  //@ts-ignore
+  installationStore:
+    process.env.ENVIRONMENT !== "prod"
+      ? new FileInstallationStore()
+      : {
+          storeInstallation: async (installation) => {
+            // Bolt will pass your handler an installation object
+            if (
+              installation.isEnterpriseInstall &&
+              installation.enterprise !== undefined
+            ) {
+              // handle storing org-wide app installation
+              return await database.set(
+                installation.enterprise.id,
+                installation
+              );
+            }
+            if (installation.team !== undefined) {
+              // single team app installation
+              return await database.set(installation.team.id, installation);
+            }
+            throw new Error(
+              "Failed saving installation data to installationStore"
+            );
+          },
+          fetchInstallation: async (installQuery) => {
+            // Bolt will pass your handler an installQuery object
+            if (
+              installQuery.isEnterpriseInstall &&
+              installQuery.enterpriseId !== undefined
+            ) {
+              // handle org wide app installation lookup
+              return await database.get(installQuery.enterpriseId);
+            }
+            if (installQuery.teamId !== undefined) {
+              // single team app installation lookup
+              return await database.get(installQuery.teamId);
+            }
+            throw new Error("Failed fetching installation");
+          },
+        },
 });
 
 // All the room in the world for your code
 
 // Listens to incoming messages that contain "hello"
-app.message('hello', async ({ message, say }) => {
+app.message("hello", async ({ message, say, context }) => {
   // say() sends a message to the channel where the event was triggered
-  console.log(message, 'message')
+  console.log(message, "message");
   await say(`Hey there!`);
 });
 
@@ -31,14 +79,14 @@ for the first time
 
 **/
 app.event("app_home_opened", async ({ context, event, say }) => {
-  console.log(event, 'event')
+  console.log(event, "event");
   console.log(context, "context");
   if (event.tab === "messages") {
     // check the message history if there was a prior interaction for this App DM
     let history = await app.client.conversations.history({
       token: context.botToken,
       channel: event.channel,
-      count: 1 // we only need to check if >=1 messages exist
+      count: 1, // we only need to check if >=1 messages exist
     });
 
     // if there was no prior interaction (= 0 messages),
@@ -48,8 +96,6 @@ app.event("app_home_opened", async ({ context, event, say }) => {
     }
   }
 });
-
-
 
 (async () => {
   // Start your app
