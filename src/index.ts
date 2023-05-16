@@ -5,8 +5,6 @@ import { welcome } from "./blocks/welcome";
 
 dotenv.config();
 
-
-
 const databaseData: { [key: string]: string } = {}
 
 const database = {
@@ -22,12 +20,11 @@ const database = {
   },
 };
 
-
 const app = new App({
   ...(process.env.ENVIRONMENT !== "prod" && {
     token: process.env.SLACK_BOT_TOKEN,
   }),
-  appToken: process.env.SLACK_APP_TOKEN,
+  // appToken: process.env.SLACK_APP_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   clientId: process.env.SLACK_CLIENT_ID,
   clientSecret: process.env.SLACK_CLIENT_SECRET,
