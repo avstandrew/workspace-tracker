@@ -67,6 +67,21 @@ const app = new App({
             }
             throw new Error("Failed fetching installation");
           },
+          deleteInstallation: async (installQuery) => {
+            // Bolt will pass your handler  an installQuery object
+            if (
+              installQuery.isEnterpriseInstall &&
+              installQuery.enterpriseId !== undefined
+            ) {
+              // org wide app installation deletion
+              return await database.delete(installQuery.enterpriseId);
+            }
+            if (installQuery.teamId !== undefined) {
+              // single team app installation deletion
+              return await database.delete(installQuery.teamId);
+            }
+            throw new Error("Failed to delete installation");
+          },
         },
 });
 
