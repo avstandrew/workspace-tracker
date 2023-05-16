@@ -5,7 +5,23 @@ import { welcome } from "./blocks/welcome";
 
 dotenv.config();
 
-const database = new Map();
+
+
+const databaseData: { [key: string]: string } = {}
+
+const database = {
+  set: async (key: string, data: any) => {
+    databaseData[key] = data;
+  },
+  get: async (key: string) => {
+    return databaseData[key];
+  },
+  delete: async (key: string) => {
+    return delete databaseData[key];
+
+  },
+};
+
 
 const app = new App({
   ...(process.env.ENVIRONMENT !== "prod" && {
