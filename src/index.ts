@@ -2,14 +2,11 @@ import { App } from "@slack/bolt";
 import { FileInstallationStore } from "@slack/oauth";
 import dotenv from "dotenv";
 import { welcome } from "./blocks/welcome";
-import { Redis } from "@upstash/redis";
+import Redis from "ioredis";
 
 dotenv.config();
 
-const database = new Redis({
-  url: process.env.REDIS_CONNECTION_URL!!,
-  token: process.env.REDIS_CONNECTION_TOKEN!!,
-});
+const database = new Redis(process.env.REDIS_CONNECTION_URL!!);
 
 // const databaseData: { [key: string]: string } = {}
 
@@ -60,11 +57,15 @@ const app = new App({
               // handle storing org-wide app installation
               return await database.set(
                 installation.enterprise.id,
+                //@ts-ignore
+
                 installation
               );
             }
             if (installation.team !== undefined) {
               // single team app installation
+              //@ts-ignore
+
               return await database.set(installation.team.id, installation);
             }
             throw new Error(
@@ -142,8 +143,7 @@ app.event("app_home_opened", async ({ context, event, say }) => {
   }
 });
 
-  const PORT = process.env.PORT || 3000;
-
+const PORT = process.env.PORT || 3000;
 
 (async () => {
   await app.start(PORT);
