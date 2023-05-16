@@ -13,6 +13,16 @@ const app = new App({
   }),
   appToken: process.env.SLACK_APP_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
+  clientId: process.env.SLACK_CLIENT_ID,
+  clientSecret: process.env.SLACK_CLIENT_SECRET,
+  stateSecret: process.env.SLACK_STATE_SECRET,
+  scopes: [
+    "channels:read",
+    "channels:history",
+    "channels:manage",
+    "chat:write",
+    "incoming-webhook",
+  ],
   socketMode: true,
   installerOptions: {
     directInstall: true,
