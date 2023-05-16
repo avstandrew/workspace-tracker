@@ -2,23 +2,27 @@ import { App } from "@slack/bolt";
 import { FileInstallationStore } from "@slack/oauth";
 import dotenv from "dotenv";
 import { welcome } from "./blocks/welcome";
+import Redis from "ioredis";
+
+const database = new Redis(process.env.REDIS_CONNECTION_URL!!);
+
 
 dotenv.config();
 
-const databaseData: { [key: string]: string } = {}
+// const databaseData: { [key: string]: string } = {}
 
-const database = {
-  set: async (key: string, data: any) => {
-    databaseData[key] = data;
-  },
-  get: async (key: string) => {
-    return databaseData[key];
-  },
-  delete: async (key: string) => {
-    return delete databaseData[key];
+// const database = {
+//   set: async (key: string, data: any) => {
+//     databaseData[key] = data;
+//   },
+//   get: async (key: string) => {
+//     return databaseData[key];
+//   },
+//   delete: async (key: string) => {
+//     return delete databaseData[key];
 
-  },
-};
+//   },
+// };
 
 const app = new App({
   ...(process.env.ENVIRONMENT !== "prod" && {
@@ -54,11 +58,13 @@ const app = new App({
               // handle storing org-wide app installation
               return await database.set(
                 installation.enterprise.id,
+                //@ts-ignore
                 installation
               );
             }
             if (installation.team !== undefined) {
               // single team app installation
+              //@ts-ignore
               return await database.set(installation.team.id, installation);
             }
             throw new Error(
@@ -87,10 +93,14 @@ const app = new App({
               installQuery.enterpriseId !== undefined
             ) {
               // org wide app installation deletion
+              //@ts-ignore
+
               return await database.delete(installQuery.enterpriseId);
             }
             if (installQuery.teamId !== undefined) {
               // single team app installation deletion
+              //@ts-ignore
+
               return await database.delete(installQuery.teamId);
             }
             throw new Error("Failed to delete installation");
