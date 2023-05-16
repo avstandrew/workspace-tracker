@@ -8,16 +8,16 @@ import { Redis } from "@upstash/redis/with-fetch";
 
 dotenv.config();
 
-const database = new Redis({
-  url: process.env.REDIS_CONNECTION_URL!!,
-  token: process.env.REDIS_CONNECTION_TOKEN!!,
-});
+// const database = new Redis({
+//   url: process.env.REDIS_CONNECTION_URL!!,
+//   token: process.env.REDIS_CONNECTION_TOKEN!!,
+// });
 
-// const databaseData: { [key: string]: string } = {}
+const database: { [key: string]: any } = {};
 
 // const database = {
 //   set: async (key: string, data: any) => {
-//     databaseData[key] = data;
+//     return databaseData[key] = data;
 //   },
 //   get: async (key: string) => {
 //     return databaseData[key];
@@ -56,55 +56,30 @@ const app = new App({
       : {
           storeInstallation: async (installation) => {
             // Bolt will pass your handler an installation object
-            if (
-              installation.isEnterpriseInstall &&
-              installation.enterprise !== undefined
-            ) {
-              // handle storing org-wide app installation
-              return await database.set(
-                installation.enterprise.id,
-                installation
-              );
-            }
-            if (installation.team !== undefined) {
+            if (installation.isEnterpriseInstall) {
+              // support for org wide app installation
+              if (installation.enterprise?.id)
+                database[installation.enterprise.id] = installation;
+            } else {
               // single team app installation
-              return await database.set(installation.team.id, installation);
+              if (installation?.team?.id)
+                database[installation.team.id] = installation;
             }
-            throw new Error(
-              "Failed saving installation data to installationStore"
-            );
           },
           fetchInstallation: async (installQuery) => {
-            // Bolt will pass your handler an installQuery object
+            // change the line below so it fetches from your database
             if (
               installQuery.isEnterpriseInstall &&
               installQuery.enterpriseId !== undefined
             ) {
-              // handle org wide app installation lookup
-              return await database.get(installQuery.enterpriseId);
+              // org wide app installation lookup
+              return database[installQuery.enterpriseId];
             }
             if (installQuery.teamId !== undefined) {
               // single team app installation lookup
-              return await database.get(installQuery.teamId);
+              return database[installQuery.teamId];
             }
             throw new Error("Failed fetching installation");
-          },
-          deleteInstallation: async (installQuery) => {
-            // Bolt will pass your handler  an installQuery object
-            if (
-              installQuery.isEnterpriseInstall &&
-              installQuery.enterpriseId !== undefined
-            ) {
-              // org wide app installation deletion
-
-              return await database.del(installQuery.enterpriseId);
-            }
-            if (installQuery.teamId !== undefined) {
-              // single team app installation deletion
-
-              return await database.del(installQuery.teamId);
-            }
-            throw new Error("Failed to delete installation");
           },
         },
 });
