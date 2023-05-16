@@ -1,5 +1,7 @@
 import { App } from "@slack/bolt";
 import { FileInstallationStore } from "@slack/oauth";
+import { LogLevel } from "@slack/logger";
+
 import dotenv from "dotenv";
 import { welcome } from "./blocks/welcome";
 import { Redis } from "@upstash/redis/with-fetch";
@@ -30,6 +32,7 @@ const app = new App({
   ...(process.env.ENVIRONMENT !== "prod" && {
     token: process.env.SLACK_BOT_TOKEN,
   }),
+  logLevel: LogLevel.DEBUG,
   appToken: process.env.SLACK_APP_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   clientId: process.env.SLACK_CLIENT_ID,
@@ -142,8 +145,7 @@ app.event("app_home_opened", async ({ context, event, say }) => {
   }
 });
 
-  const PORT = process.env.PORT || 3000;
-
+const PORT = process.env.PORT || 3000;
 
 (async () => {
   await app.start(PORT);
