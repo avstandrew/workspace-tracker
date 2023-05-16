@@ -10,8 +10,8 @@ const database = new Map();
 const app = new App({
   ...(process.env.ENVIRONMENT !== "prod" && {
     token: process.env.SLACK_BOT_TOKEN,
-    appToken: process.env.SLACK_APP_TOKEN,
   }),
+  appToken: process.env.SLACK_APP_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   socketMode: true,
   installerOptions: {
