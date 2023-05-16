@@ -8,10 +8,11 @@ dotenv.config();
 const database = new Map();
 
 const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
+  ...(process.env.ENVIRONMENT !== "prod" && {
+    token: process.env.SLACK_BOT_TOKEN,
+    appToken: process.env.SLACK_APP_TOKEN,
+  }),
   signingSecret: process.env.SLACK_SIGNING_SECRET,
-  appToken: process.env.SLACK_APP_TOKEN,
-  stateSecret: process.env.SLACK_STATE_SECRET,
   socketMode: true,
   installerOptions: {
     directInstall: true,
@@ -79,8 +80,6 @@ for the first time
 
 **/
 app.event("app_home_opened", async ({ context, event, say }) => {
-  console.log(event, "event");
-  console.log(context, "context");
   if (event.tab === "messages") {
     // check the message history if there was a prior interaction for this App DM
     let history = await app.client.conversations.history({
